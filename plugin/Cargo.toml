@@ -2,8 +2,13 @@
 name = "jintemplify_plugin"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "jintemplify plugin library"
+license = "MIT"
+repository = "https://github.com/fantajeon/jintemplify-plugin"
+homepage = "https://github.com/fantajeon/jintemplify-plugin"
+documentation = "https://github.com/fantajeon/jintemplify-plugin"
+authors = ["Hyeokjune Jeon <fantajeon@gmail.com>"]
+exclude = ["tests/**", "examples/**"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
