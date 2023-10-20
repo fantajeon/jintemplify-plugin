@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "plugin",
+    "plugin_macro"
+]
