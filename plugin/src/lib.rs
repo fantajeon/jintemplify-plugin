@@ -9,11 +9,11 @@ macro_rules! guest_plugin {
         }
 
         #[no_mangle]
-        extern "C" fn guest_free(ptr: *mut plugin::ReturnValues) {
+        extern "C" fn guest_free(ptr: *mut jintemplify_plugin::ReturnValues) {
             free_return_values(ptr);
         }
 
-        pub fn free_return_values(ptr: *mut plugin::ReturnValues) {
+        pub fn free_return_values(ptr: *mut jintemplify_plugin::ReturnValues) {
             let boxed = unsafe { Box::from_raw(ptr) };
             let _ = unsafe {
                 Vec::from_raw_parts(boxed.ptr as *mut u8, boxed.len as usize, boxed.cap as usize)

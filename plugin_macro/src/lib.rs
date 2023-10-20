@@ -6,12 +6,12 @@ use syn::{parse_macro_input, parse_quote, FnArg, ItemFn, Pat, ReturnType, Stmt};
 
 fn translate_inputs<'a>(it: impl Iterator<Item = &'a mut FnArg>) -> Vec<Stmt> {
     let preprocess_block: Stmt = parse_quote! {
-        let args: plugin::InputWrapper = {
+        let args: jintemplify_plugin::InputWrapper = {
             let slice = unsafe { std::slice::from_raw_parts(ptr, len as usize) };
             let json_str = match std::str::from_utf8(slice) {
                 Ok(s) => s,
                 Err(_) => {
-                    return plugin::serialize_to_return_values(&plugin::ErrorValue {
+                    return jintemplify_plugin::serialize_to_return_values(&jintemplify_plugin::ErrorValue {
                         reason: "Failed to convert byte slice to string".to_string(),
                     })
                 }
@@ -19,7 +19,7 @@ fn translate_inputs<'a>(it: impl Iterator<Item = &'a mut FnArg>) -> Vec<Stmt> {
             let args = match serde_json::from_str(json_str) {
                 Ok(val) => val,
                 Err(err) => {
-                    return plugin::serialize_to_return_values(&plugin::ErrorValue {
+                    return jintemplify_plugin::serialize_to_return_values(&jintemplify_plugin::ErrorValue {
                         reason: format!("Failed to deserialize JSON: {}", err).to_string(),
                     })
                 }
@@ -42,7 +42,7 @@ fn translate_inputs<'a>(it: impl Iterator<Item = &'a mut FnArg>) -> Vec<Stmt> {
         })
         .for_each(|(index, name, ty)| {
             out.push(
-                parse_quote!(let #name: #ty = plugin::convert_value::<#ty>(&args.params[#index], #index).unwrap();),
+                parse_quote!(let #name: #ty = jintemplify_plugin::convert_value::<#ty>(&args.params[#index], #index).unwrap();),
             );
         });
 
@@ -54,10 +54,10 @@ fn translate_output(ret: &mut ReturnType) -> Stmt {
 
     if let ReturnType::Type(_, _ty) = ret {
         out = parse_quote!({
-            let out = plugin::OutputWrapper {
+            let out = jintemplify_plugin::OutputWrapper {
                 result: serde_json::json!(out),
             };
-            return plugin::serialize_to_return_values(&out);
+            return jintemplify_plugin::serialize_to_return_values(&out);
         });
     }
 
@@ -76,7 +76,7 @@ fn make_plugin(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         #[no_mangle]
-        pub unsafe extern "C" fn #fn_name (ptr: *mut u8, len: u32) -> *mut plugin::ReturnValues {
+        pub unsafe extern "C" fn #fn_name (ptr: *mut u8, len: u32) -> *mut jintemplify_plugin::ReturnValues {
             #(#prelude)*
             let out = (move || #output_type #fn_block)();
             #epilode
